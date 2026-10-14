@@ -1,0 +1,240 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email == 'govardhantk71@gmail.com' && request.auth.token.email_verified == true)
+      );
+    }
+
+    // 3. Entity Validation Blueprints
+    function isValidPatient(data) {
+      return data.keys().hasAll([
+        'ownerId', 'token', 'fullName', 'phone', 'age', 'gender',
+        'village', 'aadhaarLast4', 'department', 'vitalsSummary',
+        'diagnosis', 'prescriptionSummary', 'status', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId', 'token', 'fullName', 'phone', 'age', 'gender',
+        'village', 'aadhaarLast4', 'department', 'vitalsSummary',
+        'diagnosis', 'prescriptionSummary', 'status', 'createdAt', 'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+      data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.token is string && data.token.size() >= 2 && data.token.size() <= 20 &&
+      data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 120 &&
+      data.phone is string && data.phone.size() >= 5 && data.phone.size() <= 25 &&
+      data.age is string && data.age.size() >= 1 && data.age.size() <= 10 &&
+      data.gender is string && data.gender.size() >= 1 && data.gender.size() <= 16 &&
+      data.gender in ['Female', 'Male', 'Other'] &&
+      data.village is string && data.village.size() >= 1 && data.village.size() <= 120 &&
+      data.aadhaarLast4 is string && data.aadhaarLast4.size() == 4 &&
+      data.aadhaarLast4.matches('^[0-9]{4}$') &&
+      data.department is string && data.department.size() >= 1 && data.department.size() <= 80 &&
+      data.vitalsSummary is string && data.vitalsSummary.size() <= 300 &&
+      data.diagnosis is string && data.diagnosis.size() <= 500 &&
+      data.prescriptionSummary is string && data.prescriptionSummary.size() <= 500 &&
+      data.status is string && data.status.size() >= 1 && data.status.size() <= 24 &&
+      data.status in ['registered', 'triaged', 'consulted', 'completed'] &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidCamp(data) {
+      return data.keys().hasAll([
+        'ownerId', 'campCode', 'taluk', 'location', 'campDate', 'meshStatus',
+        'registeredCount', 'targetCapacity', 'doctorsAssigned', 'volunteersAssigned',
+        'piNodeIp', 'status', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId', 'campCode', 'taluk', 'location', 'campDate', 'meshStatus',
+        'registeredCount', 'targetCapacity', 'doctorsAssigned', 'volunteersAssigned',
+        'piNodeIp', 'status', 'createdAt', 'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+      data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.campCode is string && data.campCode.size() >= 2 && data.campCode.size() <= 32 &&
+      data.campCode.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.taluk is string && data.taluk.size() >= 1 && data.taluk.size() <= 100 &&
+      data.location is string && data.location.size() >= 1 && data.location.size() <= 200 &&
+      data.campDate is string && data.campDate.size() >= 1 && data.campDate.size() <= 60 &&
+      data.meshStatus is string && data.meshStatus.size() >= 1 && data.meshStatus.size() <= 24 &&
+      data.meshStatus in ['ONLINE_MESH', 'SYNC_PENDING', 'PROVISIONING', 'COMPLETED'] &&
+      data.registeredCount is number && data.registeredCount >= 0 && data.registeredCount <= 100000 &&
+      data.targetCapacity is number && data.targetCapacity >= 1 && data.targetCapacity <= 100000 &&
+      data.doctorsAssigned is number && data.doctorsAssigned >= 0 && data.doctorsAssigned <= 1000 &&
+      data.volunteersAssigned is number && data.volunteersAssigned >= 0 && data.volunteersAssigned <= 5000 &&
+      data.piNodeIp is string && data.piNodeIp.size() >= 1 && data.piNodeIp.size() <= 64 &&
+      data.status is string && data.status.size() >= 1 && data.status.size() <= 24 &&
+      data.status in ['active', 'provisioning', 'completed'] &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidRegistration(data) {
+      return data.keys().hasAll([
+        'ownerId', 'patientId', 'campId', 'token', 'fullName', 'phone',
+        'dob', 'gender', 'village', 'govId', 'arrivalSlot', 'symptoms',
+        'status', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId', 'patientId', 'campId', 'token', 'fullName', 'phone',
+        'dob', 'gender', 'village', 'govId', 'arrivalSlot', 'symptoms',
+        'status', 'createdAt', 'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+      data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      isValidId(data.patientId) &&
+      isValidId(data.campId) &&
+      data.token is string && data.token.size() >= 2 && data.token.size() <= 20 &&
+      data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 120 &&
+      data.phone is string && data.phone.size() >= 5 && data.phone.size() <= 25 &&
+      data.dob is string && data.dob.size() >= 1 && data.dob.size() <= 30 &&
+      data.gender is string && data.gender.size() >= 1 && data.gender.size() <= 16 &&
+      data.gender in ['Female', 'Male', 'Other'] &&
+      data.village is string && data.village.size() >= 1 && data.village.size() <= 160 &&
+      data.govId is string && data.govId.size() >= 4 && data.govId.size() <= 40 &&
+      data.arrivalSlot is string && data.arrivalSlot.size() >= 1 && data.arrivalSlot.size() <= 40 &&
+      data.symptoms is string && data.symptoms.size() <= 300 &&
+      data.status is string && data.status.size() >= 1 && data.status.size() <= 24 &&
+      data.status in ['queued', 'checked-in', 'completed'] &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // 4. Collection Rules: /patients/{patientId}
+    match /patients/{patientId} {
+      allow get: if isSignedIn() && isValidId(patientId) && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+        isValidId(patientId) &&
+        isValidPatient(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isSignedIn() &&
+        isValidId(patientId) &&
+        isValidPatient(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (existing().status != 'completed' || isAdmin()) &&
+        (
+          isAdmin() ||
+          // Action 1: Update Vitals & Triage Status
+          incoming().diff(existing()).affectedKeys().hasOnly(['vitalsSummary', 'status', 'updatedAt']) ||
+          // Action 2: Update Clinical Consultation (Diagnosis & Prescription)
+          incoming().diff(existing()).affectedKeys().hasOnly(['diagnosis', 'prescriptionSummary', 'status', 'updatedAt']) ||
+          // Action 3: Update Demographics or Full Clinical Record
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'fullName', 'phone', 'age', 'gender', 'village', 'department',
+            'vitalsSummary', 'diagnosis', 'prescriptionSummary', 'status', 'updatedAt'
+          ])
+        );
+
+      allow delete: if isSignedIn() && isValidId(patientId) && (existing().ownerId == request.auth.uid || isAdmin());
+    }
+
+    // 5. Collection Rules: /camps/{campId}
+    match /camps/{campId} {
+      allow get: if isSignedIn() && isValidId(campId) && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+        isValidId(campId) &&
+        isValidCamp(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isSignedIn() &&
+        isValidId(campId) &&
+        isValidCamp(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (existing().status != 'completed' || isAdmin()) &&
+        (
+          isAdmin() ||
+          // Action 1: Sync Mesh Status & Registration Counters
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'meshStatus', 'registeredCount', 'status', 'updatedAt'
+          ]) ||
+          // Action 2: Update Camp Provisioning Details
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'taluk', 'location', 'campDate', 'meshStatus', 'registeredCount',
+            'targetCapacity', 'doctorsAssigned', 'volunteersAssigned', 'piNodeIp', 'status', 'updatedAt'
+          ])
+        );
+
+      allow delete: if isSignedIn() && isValidId(campId) && (existing().ownerId == request.auth.uid || isAdmin());
+    }
+
+    // 6. Collection Rules: /registrations/{registrationId}
+    match /registrations/{registrationId} {
+      allow get: if isSignedIn() && isValidId(registrationId) && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+        isValidId(registrationId) &&
+        isValidRegistration(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        (
+          exists(/databases/$(database)/documents/patients/$(incoming().patientId)) ||
+          existsAfter(/databases/$(database)/documents/patients/$(incoming().patientId))
+        ) &&
+        (
+          exists(/databases/$(database)/documents/camps/$(incoming().campId)) ||
+          existsAfter(/databases/$(database)/documents/camps/$(incoming().campId))
+        );
+
+      allow update: if isSignedIn() &&
+        isValidId(registrationId) &&
+        isValidRegistration(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().patientId == existing().patientId &&
+        incoming().campId == existing().campId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (existing().status != 'completed' || isAdmin()) &&
+        (
+          isAdmin() ||
+          // Action 1: Progress Gate Pass Status or Slot
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'arrivalSlot', 'symptoms', 'updatedAt'])
+        );
+
+      allow delete: if isSignedIn() && isValidId(registrationId) && (existing().ownerId == request.auth.uid || isAdmin());
+    }
+  }
+}

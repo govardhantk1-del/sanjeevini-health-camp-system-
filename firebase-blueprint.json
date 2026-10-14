@@ -1,0 +1,358 @@
+{
+  "entities": {
+    "Patient": {
+      "title": "Patient",
+      "description": "Clinical patient record for rural health camp triage, consultation, and pharmacy dispensing.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the authenticated user who created or owns this patient record.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "token": {
+          "type": "string",
+          "description": "Camp queue token identifier such as #T-042.",
+          "minLength": 2,
+          "maxLength": 20
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the patient.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "phone": {
+          "type": "string",
+          "description": "Patient contact mobile number.",
+          "minLength": 5,
+          "maxLength": 25
+        },
+        "age": {
+          "type": "string",
+          "description": "Patient age in years.",
+          "minLength": 1,
+          "maxLength": 10
+        },
+        "gender": {
+          "type": "string",
+          "description": "Patient gender.",
+          "enum": ["Female", "Male", "Other"],
+          "minLength": 1,
+          "maxLength": 16
+        },
+        "village": {
+          "type": "string",
+          "description": "Village or ward address.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "aadhaarLast4": {
+          "type": "string",
+          "description": "Last 4 digits of Aadhaar or government ID.",
+          "minLength": 4,
+          "maxLength": 4,
+          "pattern": "^[0-9]{4}$"
+        },
+        "department": {
+          "type": "string",
+          "description": "Assigned clinical department or OPD room.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "vitalsSummary": {
+          "type": "string",
+          "description": "Recorded pre-clinical vitals summary.",
+          "minLength": 0,
+          "maxLength": 300
+        },
+        "diagnosis": {
+          "type": "string",
+          "description": "Clinical diagnosis notes and ICD-10 codes.",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "prescriptionSummary": {
+          "type": "string",
+          "description": "Prescribed medications and dispensing regimen.",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "status": {
+          "type": "string",
+          "description": "Current clinical workflow state.",
+          "enum": ["registered", "triaged", "consulted", "completed"],
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update."
+        }
+      },
+      "required": [
+        "ownerId",
+        "token",
+        "fullName",
+        "phone",
+        "age",
+        "gender",
+        "village",
+        "aadhaarLast4",
+        "department",
+        "vitalsSummary",
+        "diagnosis",
+        "prescriptionSummary",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Camp": {
+      "title": "Camp",
+      "description": "Outreach health camp site deployment and local edge node configuration.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the authenticated camp administrator.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "campCode": {
+          "type": "string",
+          "description": "Unique camp deployment code.",
+          "minLength": 2,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "taluk": {
+          "type": "string",
+          "description": "Taluk or district sector name.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "location": {
+          "type": "string",
+          "description": "Venue name and village location.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "campDate": {
+          "type": "string",
+          "description": "Scheduled date of the health camp.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "meshStatus": {
+          "type": "string",
+          "description": "Local Wi-Fi mesh sync status.",
+          "enum": ["ONLINE_MESH", "SYNC_PENDING", "PROVISIONING", "COMPLETED"],
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "registeredCount": {
+          "type": "number",
+          "description": "Number of patients registered at this camp."
+        },
+        "targetCapacity": {
+          "type": "number",
+          "description": "Target maximum patient capacity for the camp."
+        },
+        "doctorsAssigned": {
+          "type": "number",
+          "description": "Count of medical officers assigned."
+        },
+        "volunteersAssigned": {
+          "type": "number",
+          "description": "Count of field volunteers assigned."
+        },
+        "piNodeIp": {
+          "type": "string",
+          "description": "Local Raspberry Pi edge server IP address.",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "status": {
+          "type": "string",
+          "description": "Lifecycle status of the camp.",
+          "enum": ["active", "provisioning", "completed"],
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update."
+        }
+      },
+      "required": [
+        "ownerId",
+        "campCode",
+        "taluk",
+        "location",
+        "campDate",
+        "meshStatus",
+        "registeredCount",
+        "targetCapacity",
+        "doctorsAssigned",
+        "volunteersAssigned",
+        "piNodeIp",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Registration": {
+      "title": "Registration",
+      "description": "Pre-camp or walk-in patient registration and digital gate pass record.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the authenticated user submitting the registration.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference ID of the corresponding Patient document.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "campId": {
+          "type": "string",
+          "description": "Reference ID of the Camp document.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "token": {
+          "type": "string",
+          "description": "Allocated camp queue token.",
+          "minLength": 2,
+          "maxLength": 20
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Registered patient full name.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "phone": {
+          "type": "string",
+          "description": "Registered mobile phone number.",
+          "minLength": 5,
+          "maxLength": 25
+        },
+        "dob": {
+          "type": "string",
+          "description": "Date of birth or age string.",
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "gender": {
+          "type": "string",
+          "description": "Patient gender.",
+          "enum": ["Female", "Male", "Other"],
+          "minLength": 1,
+          "maxLength": 16
+        },
+        "village": {
+          "type": "string",
+          "description": "Village or residential address.",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "govId": {
+          "type": "string",
+          "description": "Masked government ID or Aadhaar reference.",
+          "minLength": 4,
+          "maxLength": 40
+        },
+        "arrivalSlot": {
+          "type": "string",
+          "description": "Preferred camp arrival time window.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "symptoms": {
+          "type": "string",
+          "description": "Selected health conditions or symptoms.",
+          "minLength": 0,
+          "maxLength": 300
+        },
+        "status": {
+          "type": "string",
+          "description": "Gate pass check-in status.",
+          "enum": ["queued", "checked-in", "completed"],
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update."
+        }
+      },
+      "required": [
+        "ownerId",
+        "patientId",
+        "campId",
+        "token",
+        "fullName",
+        "phone",
+        "dob",
+        "gender",
+        "village",
+        "govId",
+        "arrivalSlot",
+        "symptoms",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/patients/{patientId}": {
+      "schema": {
+        "$ref": "#/entities/Patient"
+      },
+      "description": "Stores patient clinical records, vitals, diagnoses, and prescriptions."
+    },
+    "/camps/{campId}": {
+      "schema": {
+        "$ref": "#/entities/Camp"
+      },
+      "description": "Stores rural health camp deployments, capacity, and mesh node telemetry."
+    },
+    "/registrations/{registrationId}": {
+      "schema": {
+        "$ref": "#/entities/Registration"
+      },
+      "description": "Stores patient camp registrations and digital gate passes."
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Sanjeevini Health Camp System",
+  "description": "Offline-first rural health camp clinical workstation, triage, bilingual pharmacy dispensing, and real-time telemetry system for Tumakuru District Health Outreach.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
